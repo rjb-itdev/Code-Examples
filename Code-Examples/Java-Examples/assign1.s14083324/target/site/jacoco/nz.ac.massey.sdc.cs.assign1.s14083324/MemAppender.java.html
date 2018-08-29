@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MemAppender.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">assign1.s14083324</a> &gt; <a href="index.source.html" class="el_package">nz.ac.massey.sdc.cs.assign1.s14083324</a> &gt; <span class="el_source">MemAppender.java</span></div><h1>MemAppender.java</h1><pre class="source lang-java linenums">package nz.ac.massey.sdc.cs.assign1.s14083324;
+
+import java.lang.ref.SoftReference;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.spi.LoggingEvent;
+
+public class MemAppender extends AppenderSkeleton{
+
+	private List&lt;LoggingEvent&gt; events;
+<span class="fc" id="L14">	private List&lt;SoftReference&lt;LoggingEvent&gt;&gt; eventCache = new ArrayList&lt;SoftReference&lt;LoggingEvent&gt;&gt;();</span>
+<span class="fc" id="L15">	private int maxSize = 100; // Default</span>
+<span class="fc" id="L16">	private int discardedLogCount = 0;</span>
+<span class="fc" id="L17">	public static MemAppender instance = null;</span>
+
+	public int getMaxSize() {
+<span class="nc" id="L20">		return maxSize;</span>
+	}
+
+	public void setMaxSize(int size) {
+<span class="fc" id="L24">		this.maxSize = size;</span>
+<span class="fc" id="L25">	}</span>
+	
+	
+	protected MemAppender() {
+<span class="fc" id="L29">		this(new ArrayList&lt;LoggingEvent&gt;());</span>
+<span class="fc" id="L30">	}</span>
+
+	
+
+<span class="fc" id="L34">	protected MemAppender(ArrayList&lt;LoggingEvent&gt; events) {</span>
+<span class="fc" id="L35">		this.events = events;</span>
+<span class="fc" id="L36">	}</span>
+
+	public static MemAppender getMemAppender(List&lt;LoggingEvent&gt; events) {
+<span class="fc bfc" id="L39" title="All 2 branches covered.">		if (instance == null) {</span>
+<span class="fc" id="L40">			instance = new MemAppender();</span>
+<span class="fc" id="L41">			return instance;</span>
+		}
+<span class="fc" id="L43">		return instance;</span>
+	}
+
+	public List&lt;LoggingEvent&gt; getCurrentLogs() {
+<span class="fc" id="L47">		List&lt;LoggingEvent&gt; currentLogs = new ArrayList&lt;LoggingEvent&gt;();</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">		for (SoftReference&lt;LoggingEvent&gt; le : eventCache) {</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">			if(le.get() != null)</span>
+			{
+<span class="nc" id="L51">				currentLogs.add(le.get());</span>
+			}
+<span class="nc" id="L53">		}</span>
+<span class="fc" id="L54">		currentLogs.addAll(events);</span>
+<span class="fc" id="L55">		return Collections.unmodifiableList(currentLogs);</span>
+	}
+
+	public void close() {
+<span class="fc" id="L59">		events.clear();</span>
+<span class="fc" id="L60">	}</span>
+
+	public boolean requiresLayout() {
+		// TODO Auto-generated method stub
+<span class="nc" id="L64">		return false;</span>
+	}
+
+	
+
+	public int getDiscardedLogCount() {
+<span class="fc" id="L70">		return this.discardedLogCount;</span>
+	}
+
+	@Override
+	protected void append(LoggingEvent arg0) {
+<span class="fc" id="L75">		int count = 0;</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">		if (events.size() == this.maxSize) {</span>
+<span class="fc" id="L77">			eventCache.add(new SoftReference&lt;LoggingEvent&gt;(events.remove(0)));</span>
+<span class="fc" id="L78">			discardedLogCount += 1;</span>
+		}
+<span class="fc" id="L80">		count += 1;</span>
+<span class="fc" id="L81">		events.add(arg0);</span>
+		
+		
+<span class="fc" id="L84">	}</span>
+
+}
+
+
+//https://docs.oracle.com/javase/7/docs/api/java/lang/ref/SoftReference.html
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.7.9.201702052155</span></div></body></html>
